@@ -5,3 +5,7 @@ bin/
 build/
 dist/
 out/
+doc/
+*.log
+*.trees
+*.ops

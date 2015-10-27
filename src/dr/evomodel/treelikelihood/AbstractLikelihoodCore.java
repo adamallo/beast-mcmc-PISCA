@@ -1,6 +1,8 @@
 /*
  * AbstractLikelihoodCore.java
  *
+ * Provisionally modified by DM
+ *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -371,8 +373,63 @@ public abstract class AbstractLikelihoodCore implements LikelihoodCore {
     protected abstract void calculatePartialsPartialsPruning(double[] partials1, double[] matrices1,
                                                              double[] partials2, double[] matrices2,
                                                              double[] partials3, int[] matrixMap);
+    
+    //To remove when seqerror remplemented from here
+    /**
+     * Calculates partial likelihoods at a node with sequencing errors.
+     * @param nodeIndex1 the 'child 1' node
+     * @param nodeIndex2 the 'child 2' node
+     * @param nodeIndex3 the 'parent' node
+     * @param seqError1 the error of seeing "1". Given "1", L(1) = 1-seqError1, L(0) = seqError1
+     * @param seqError2 the error of seeing "0". Given "0", L(0)= 1-seqError2, L(1) = seqError2
+     * @author Rumen Kostadinov 10-08-2007
+     */
+    public void calculatePartials( int nodeIndex1, int nodeIndex2, int nodeIndex3, double seqError1, double seqError2 )
+    {
+        if (states[nodeIndex1] != null) {
+            if (states[nodeIndex2] != null) {
+                calculateStatesStatesPruning(
+                        states[nodeIndex1], matrices[currentMatricesIndices[nodeIndex1]][nodeIndex1],
+                        states[nodeIndex2], matrices[currentMatricesIndices[nodeIndex2]][nodeIndex2],
+                        partials[currentPartialsIndices[nodeIndex3]][nodeIndex3], seqError1, seqError2);
+            } else {
+                calculateStatesPartialsPruning(states[nodeIndex1], matrices[currentMatricesIndices[nodeIndex1]][nodeIndex1],
+                        partials[currentPartialsIndices[nodeIndex2]][nodeIndex2], matrices[currentMatricesIndices[nodeIndex2]][nodeIndex2],
+                        partials[currentPartialsIndices[nodeIndex3]][nodeIndex3], seqError1, seqError2);
+            }
+        } else {
+            if (states[nodeIndex2] != null) {
+                calculateStatesPartialsPruning(states[nodeIndex2], matrices[currentMatricesIndices[nodeIndex2]][nodeIndex2],
+                        partials[currentPartialsIndices[nodeIndex1]][nodeIndex1], matrices[currentMatricesIndices[nodeIndex1]][nodeIndex1],
+                        partials[currentPartialsIndices[nodeIndex3]][nodeIndex3], seqError1, seqError2);
+            } else {
+                calculatePartialsPartialsPruning(partials[currentPartialsIndices[nodeIndex1]][nodeIndex1], matrices[currentMatricesIndices[nodeIndex1]][nodeIndex1],
+                        partials[currentPartialsIndices[nodeIndex2]][nodeIndex2], matrices[currentMatricesIndices[nodeIndex2]][nodeIndex2],
+                        partials[currentPartialsIndices[nodeIndex3]][nodeIndex3]);
+            }
+        }
 
+        if (useScaling) {
+            scalePartials(nodeIndex3);
+        }
+    }
+    
+    /**
+     * Calculates partial likelihoods at a node when both children have states + sequence errors
+     */
+    protected abstract void calculateStatesStatesPruning(int[] states1, double[] matrices1,
+                                                         int[] states2, double[] matrices2,
+                                                         double[] partials3, double seqError1, double seqError2);
 
+    /**
+     * Calculates partial likelihoods at a node when one child has states + sequence errors and one has partials
+     */
+    protected abstract void calculateStatesPartialsPruning(     int[] states1, double[] matrices1,
+                                                               double[] partials2, double[] matrices2,
+                                                               double[] partials3, double seqError1, double seqError2);
+
+    //To here
+    
     public void integratePartials(int nodeIndex, double[] proportions, double[] outPartials) {
         calculateIntegratePartials(partials[currentPartialsIndices[nodeIndex]][nodeIndex], proportions, outPartials);
     }

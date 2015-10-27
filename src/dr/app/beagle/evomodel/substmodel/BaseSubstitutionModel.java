@@ -70,7 +70,7 @@ public abstract class BaseSubstitutionModel extends AbstractModel
         q = null;
     }
 
-    BaseSubstitutionModel(String name, DataType dataType, FrequencyModel freqModel) {
+    protected BaseSubstitutionModel(String name, DataType dataType, FrequencyModel freqModel) {
         this(name, dataType, freqModel, null);
     }
 

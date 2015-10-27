@@ -1,6 +1,8 @@
 /*
  * DiscretizedBranchRates.java
  *
+ * *  Provisionally modified by DM
+ *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -197,6 +199,20 @@ public class DiscretizedBranchRates extends AbstractBranchRateModel {
         }
 
         int rateCategory = (int) Math.round(rateCategories.getNodeValue(tree, node));
+
+        //System.out.println(rates[rateCategory] + "\t"  + rateCategory);
+        return rates[currentRateArrayIndex][rateCategory] * scaleFactor;
+    }
+    
+    public final double getBranchRate(final double mrca, final double cen) { ///DM From Rumen, to change when improved the cenancestor implementation
+
+        //assert !tree.isRoot(node) : "root node doesn't have a rate!";
+
+        if (updateRateCategories) {
+            setupRates();
+        }
+
+        int rateCategory = 0;
 
         //System.out.println(rates[rateCategory] + "\t"  + rateCategory);
         return rates[currentRateArrayIndex][rateCategory] * scaleFactor;

@@ -1,6 +1,8 @@
 /*
  * AttributeBranchRateModel.java
  *
+ * * Provisionally modified by DM
+ * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -94,5 +96,10 @@ public class AttributeBranchRateModel extends AbstractBranchRateModel {
 
     private final TreeModel treeModel;
     private final String rateAttributeName;
+	@Override
+	public double getBranchRate(double mrcaHeight, double cenHeight) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
 }

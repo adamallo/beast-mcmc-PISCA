@@ -1,6 +1,8 @@
 /*
  * RelaxedDriftModel.java
  *
+ * * Provisionally modified by DM
+ * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -240,4 +242,10 @@ public class RelaxedDriftModel extends AbstractBranchRateModel
     private Parameter driftRates;
 
     boolean recalculationNeeded = true;
+
+	@Override
+	public double getBranchRate(double mrcaHeight, double cenHeight) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

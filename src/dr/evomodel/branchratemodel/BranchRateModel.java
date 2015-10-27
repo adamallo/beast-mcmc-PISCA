@@ -1,6 +1,8 @@
 /*
  * BranchRateModel.java
  *
+ * Provisionally modified by DM
+ *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -40,5 +42,6 @@ public interface BranchRateModel extends Model, BranchRates, TreeTraitProvider, 
     public static final String RATE = "rate";
 
     // This is inherited from BranchRates:
-    // double getBranchRate(Tree tree, NodeRef node);
+    //double getBranchRate(Tree tree, NodeRef node);
+    double getBranchRate(double mrcaHeight, double cenHeight); //To remove when improving the cenancestor implementation
 }

@@ -68,7 +68,7 @@ public abstract class AbstractSubstitutionModel extends AbstractModel implements
     protected boolean updateMatrix = true;
     protected boolean storedUpdateMatrix = true;
 
-    AbstractSubstitutionModel(String name, DataType dataType, FrequencyModel freqModel) {
+    protected AbstractSubstitutionModel(String name, DataType dataType, FrequencyModel freqModel) {
         super(name);
 
         this.dataType = dataType;

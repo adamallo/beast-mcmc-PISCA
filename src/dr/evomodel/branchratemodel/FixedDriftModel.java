@@ -1,6 +1,8 @@
 /*
  * FixedDriftModel.java
  *
+ * * Provisionally modified by DM
+ * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -137,6 +139,11 @@ public class FixedDriftModel extends AbstractBranchRateModel {
     private Parameter backboneDrift;
     private Parameter otherDrift;
     private BackboneNodeFilter backbone;
+	@Override
+	public double getBranchRate(double mrcaHeight, double cenHeight) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
     /*
     private Parameter remainingRates;

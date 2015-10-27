@@ -1,6 +1,8 @@
 /*
  * DefaultBranchRateModel.java
  *
+ * * * Provisionally modified by DM
+ * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -130,4 +132,10 @@ public final class DefaultBranchRateModel implements BranchRateModel {
     public String getTraitString(final Tree tree, final NodeRef node) {
         return Double.toString(getBranchRate(tree, node));
     }
+
+	@Override
+	public double getBranchRate(double mrcaHeight, double cenHeight) {
+		// TODO Auto-generated method stub
+		return 1.0;
+	}
 }

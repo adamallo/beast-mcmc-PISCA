@@ -120,6 +120,35 @@ public class RateEpochBranchRateModel extends AbstractBranchRateModel {
         }
         throw new IllegalArgumentException("root node doesn't have a rate!");
     }
+    
+    public double getBranchRate(double mrcaHeight, double lucaHeight) { //DM Cenancestor: To change when implementing a better cenancestor hack
+
+        double height0 = mrcaHeight;
+        double height1 = lucaHeight;
+        int i = 0;
+
+        double rate = 0.0;
+        double lastHeight = height0;
+
+        // First find the epoch which contains the node height
+        while (i < timeParameters.length && height0 > timeParameters[i].getParameterValue(0)) {
+                i++;
+        }
+
+        // Now walk up the branch until we reach the last epoch or the height of the parent
+        while (i < timeParameters.length && height1 > timeParameters[i].getParameterValue(0)) {
+                // add the rate for that epoch multiplied by the time spent at that rate
+                rate += rateParameters[i].getParameterValue(0) * (timeParameters[i].getParameterValue(0) - lastHeight);
+                lastHeight = timeParameters[i].getParameterValue(0);
+                i++;
+        }
+
+        // Add that last rate segment
+        rate += rateParameters[i].getParameterValue(0) * (height1 - lastHeight);
+
+        // normalize the rate for the branch length
+        return normalizeRate(rate / (height1 - height0));
+}
 
     protected double normalizeRate(double rate) {
         return rate;
