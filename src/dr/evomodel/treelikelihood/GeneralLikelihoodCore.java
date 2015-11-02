@@ -386,30 +386,53 @@ public class GeneralLikelihoodCore extends AbstractLikelihoodCore {
 		}
 	}
 
-	/**
-	 * Calculates patten log likelihoods at a node.
-	 * @param partials the partials used to calculate the likelihoods
-	 * @param frequencies an array of state frequencies
-	 * @param outLogLikelihoods an array into which the likelihoods will go
-	 */
-	public void calculateLogLikelihoods(double[] partials, double[] frequencies, double[] outLogLikelihoods)
-	{
+//	/**
+//	 * Calculates patten log likelihoods at a node.
+//	 * @param partials the partials used to calculate the likelihoods
+//	 * @param frequencies an array of state frequencies
+//	 * @param outLogLikelihoods an array into which the likelihoods will go
+//	 */
+//	public void calculateLogLikelihoods(double[] partials, double[] frequencies, double[] outLogLikelihoods)
+//	{
+//        int v = 0;
+//		for (int k = 0; k < patternCount; k++) {
+//
+//            double sum = 0.0;
+//			for (int i = 0; i < stateCount; i++) {
+//
+//				sum += frequencies[i] * partials[v];
+//				v++;
+//			}
+//            outLogLikelihoods[k] = Math.log(sum) + getLogScalingFactor(k);
+//		}
+//	}
+	  /**
+     * Calculates pattern log likelihoods at a node.
+     * @param partials the partials used to calculate the likelihoods
+     * @param probs the transition probability for branch length luca-mrca
+     * @param outLogLikelihoods an array into which the likelihoods will go
+     *///RUMEN (DM)
+    public void calculateLogLikelihoods(double[] partials, double[] probs, double[] outLogLikelihoods)
+    {
+
         int v = 0;
-		for (int k = 0; k < patternCount; k++) {
+        for (int k = 0; k < patternCount; k++) {
+
+            double logScalingFactor = getLogScalingFactor(k);
 
             double sum = 0.0;
-			for (int i = 0; i < stateCount; i++) {
+ 
+            for (int i = 0; i < stateCount; i++) {
 
-				sum += frequencies[i] * partials[v];
-				v++;
-			}
-            outLogLikelihoods[k] = Math.log(sum) + getLogScalingFactor(k);
-		}
-	}
-    protected void calculateStatesStatesPruning(int[] states1, double[] matrices1,
-            int[] states2, double[] matrices2,
-            double[] partials3, double seqError1, double seqError2){}
-protected void calculateStatesPartialsPruning(  int[] states1, double[] matrices1,
-            double[] partials2, double[] matrices2,
-            double[] partials3, double seqError1, double seqError2){}
+                // Final calculation
+                partials[v] = partials[v]*probs[i*2]+partials[v]*probs[(i*2)+1];
+                sum += partials[v];
+                v++;
+            }
+            //System.out.println("pattern"+k+"L(0)="+partials[v-2]+" L(1)="+partials[v-1]);
+            outLogLikelihoods[k] = Math.log(sum) + logScalingFactor;
+        }
+        //checkScaling(); // Commented out by DM
+    }
+
 }

@@ -32,7 +32,6 @@ import dr.evomodel.branchratemodel.BranchRateModel;
 import dr.evomodel.sitemodel.SiteModel;
 import dr.evomodel.tree.TreeModel;
 import dr.evomodel.treelikelihood.TipStatesModel;
-import dr.evomodel.treelikelihood.TreeLikelihood;
 import dr.inference.model.Variable;
 import dr.xml.*;
 
@@ -50,8 +49,6 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
     public static final String FORCE_JAVA_CORE = "forceJavaCore";
     public static final String FORCE_RESCALING = "forceRescaling";
     public static final String CENANCESTOR = "cenancestor";
-    public static final String SEQERROR1 = "sequenceError1"; //To remove when splitting cenancestor and seqerror
-    public static final String SEQERROR2 = "sequenceError2"; //To remove when splitting cenancestor and seqerror
 
     public String getParserName() {
         return TREE_LIKELIHOOD;
@@ -75,12 +72,6 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
         BranchRateModel branchRateModel = (BranchRateModel) xo.getChild(BranchRateModel.class);
         
         Variable cenancestor = (Variable) xo.getElementFirstChild(CENANCESTOR);
-        
-        Variable seqError1 = null;
-        Variable seqError2 = null;
-        
-        seqError1 = (Variable) xo.getElementFirstChild(SEQERROR1);//To remove when splitting cenancestor and seqerror
-        seqError2 = (Variable) xo.getElementFirstChild(SEQERROR2);//To remove when splitting cenancestor and seqerror
 
         TipStatesModel tipStatesModel = (TipStatesModel) xo.getChild(TipStatesModel.class);
         if (tipStatesModel != null && tipStatesModel.getPatternList() != null) {
@@ -100,8 +91,6 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
                 branchRateModel,
                 tipStatesModel,
                 cenancestor,
-                seqError1, //To remove when splitting cenancestor and seqerror
-                seqError2, //To remove when splitting cenancestor and seqerror
                 useAmbiguities, allowMissingTaxa, storePartials, forceJavaCore, forceRescaling);
     }
 
@@ -134,9 +123,5 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
             new ElementRule(TipStatesModel.class, true),
             new ElementRule(CENANCESTOR,
                     new XMLSyntaxRule[]{new ElementRule(Variable.class)},true),
-            new ElementRule(SEQERROR1, 
-            			new XMLSyntaxRule[] { new ElementRule(Variable.class) }, true),
-            new ElementRule(SEQERROR2, 
-            			new XMLSyntaxRule[] { new ElementRule(Variable.class) }, true),
     };
 }

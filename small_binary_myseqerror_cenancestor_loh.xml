@@ -147,28 +147,34 @@
 -->
 			<lohModel idref="loh_subsmodel"/>
 		</substitutionModel>
-	</siteModel>
+	</siteModel> 
 
-	<!-- START Stochastic Dollo                                                  -->
-
-	<!-- END Stochastic Dollo                                                    -->
+	<binarySequenceErrorModel id="errorModel">
+                <fpRate>
+                        <parameter id="errorModel.fpRate"  value="6.3e-06" lower="6.3e-06" upper="6.3e-06"/>
+                </fpRate>
+		<fnRate>
+			<parameter id="errorModel.fnRate" value="0.25" lower="0.25" upper="0.25"/>
+		</fnRate>
+        </binarySequenceErrorModel>
 
 	<cenancestorTreeLikelihood id="treeLikelihood" useAmbiguities="false">
 		<patterns idref="patterns"/>
 		<treeModel idref="treeModel"/>
 		<siteModel idref="siteModel"/>
-		<!-- Sequencing error: L(1|1)=1-alpha, L(0|1)=alpha L(0|0)=1-beta L(1|0)=beta -->
+		<rateEpochBranchRates idref="branchRates"/>
+		<binarySequenceErrorModel idref="errorModel"/>
+		<!-- Sequencing error: L(1|1)=1-alpha, L(0|1)=alpha L(0|0)=1-beta L(1|0)=beta
                 <sequenceError1>
                       <parameter id="seqError1" value="6.3e-06" lower="6.3e-06" upper="6.3e-06"/>
                 </sequenceError1>
                 <sequenceError2>
                       <parameter id="seqError2" value="6.3e-06" lower="6.3e-06" upper="6.3e-06"/>
-                </sequenceError2>
+                </sequenceError2>-->
                 <!-- Cenancestor, time going backwards in years -->
                 <cenancestor>
                       <parameter id="luca" value="30.0" lower="30.0" upper="30.0"/>
                 </cenancestor>
-		<rateEpochBranchRates idref="branchRates"/>
 	</cenancestorTreeLikelihood>
 
 	<!-- Likelihood for tree given sequence data                                
@@ -305,9 +311,6 @@
 		<!-- write tree log to file                                                  -->
 		<logTree id="treeFileLog" logEvery="1000" nexusFormat="true" fileName="my_test.trees" sortTranslationTable="true">
 			<treeModel idref="treeModel"/>
-			<trait name="rate" tag="rate">
-				<strictClockBranchRates idref="branchRates"/>
-			</trait>
 			<posterior idref="posterior"/>
 		</logTree>
 	</mcmc>

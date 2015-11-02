@@ -1,8 +1,6 @@
 /*
  * LikelihoodCore.java
  *
- * Provisionally modified by DM
- *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
  * This file is part of BEAST.
@@ -101,17 +99,6 @@ public interface LikelihoodCore extends LikelihoodPartialsProvider {
      * @param nodeIndex3 the 'parent' node
      */
     void calculatePartials(int nodeIndex1, int nodeIndex2, int nodeIndex3);
-    
-    /**
-    * Calculates partial likelihoods at a node with sequencing errors.
-    * @param nodeIndex1 the 'child 1' node
-    * @param nodeIndex2 the 'child 2' node
-    * @param nodeIndex3 the 'parent' node
-    * @param seqError1 the error of seeing "1". Given "1", L(1) = 1-seqError1, L(0) = seqError1
-    * @param seqError2 the error of seeing "0". Given "0", L(0)= 1-seqError2, L(1) = seqError2
-    * @author Rumen Kostadinov 10-08-2007
-    */
-   void calculatePartials( int nodeIndex1, int nodeIndex2, int nodeIndex3, double seqError1, double seqError2 );//To remove when splitting cenancestor and seqerror
 
     /**
      * Calculates partial likelihoods at a node using a matrixMap.

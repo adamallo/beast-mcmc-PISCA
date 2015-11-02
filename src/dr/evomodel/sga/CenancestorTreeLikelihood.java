@@ -43,14 +43,12 @@ import dr.evomodel.tree.TreeModel;
 import dr.evomodel.treelikelihood.AbstractTreeLikelihood;
 import dr.evomodel.treelikelihood.AminoAcidLikelihoodCore;
 import dr.evomodel.treelikelihood.GeneralLikelihoodCore;
-import dr.evomodel.treelikelihood.SequenceErrorLikelihoodCore; //To remove when splitting cenancestor and seqerror
 import dr.evomodel.treelikelihood.NativeAminoAcidLikelihoodCore;
 import dr.evomodel.treelikelihood.NativeGeneralLikelihoodCore;
 import dr.evomodel.treelikelihood.NativeNucleotideLikelihoodCore;
 import dr.evomodel.treelikelihood.NucleotideLikelihoodCore;
 import dr.evomodel.treelikelihood.TipStatesModel;
 import dr.evomodel.treelikelihood.LikelihoodCore;
-import dr.evomodelxml.treelikelihood.TreeLikelihoodParser;
 import dr.inference.model.Model;
 import dr.inference.model.Statistic;
 import dr.inference.model.Parameter;
@@ -68,8 +66,6 @@ import java.util.logging.Logger;
 public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     private static final boolean DEBUG = false;
     private Variable<Double> cenancestor = null;
-    private Variable<Double> sequenceError1 = null; //To remove when splitting cenancestor and seqerror
-    private Variable<Double> sequenceError2 = null; //To remove when splitting cenancestor and seqerror
 
     /**
      * Constructor.
@@ -80,8 +76,6 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                           BranchRateModel branchRateModel,
                           TipStatesModel tipStatesModel,
                           Variable cenancestor,
-                          Variable sequenceError1, //To remove when splitting cenancestor and seqerror
-                          Variable sequenceError2, //To remove when splitting cenancestor and seqerror
                           boolean useAmbiguities,
                           boolean allowMissingTaxa,
                           boolean storePartials,
@@ -108,17 +102,6 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
             this.cenancestor = cenancestor;
             	addVariable(cenancestor);
             	cenancestor.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1));
-             
-            	this.sequenceError1 = sequenceError1;//To remove when splitting cenancestor and seqerror
-            this.sequenceError2 = sequenceError2;//To remove when splitting cenancestor and seqerror
-            
-            	if(sequenceError1 != null  && sequenceError2 != null){//To remove when splitting cenancestor and seqerror
-                    addVariable(sequenceError1);//To remove when splitting cenancestor and seqerror
-                    addVariable(sequenceError2);//To remove when splitting cenancestor and seqerror
-                    sequenceError1.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1));//To remove when splitting cenancestor and seqerror
-                    sequenceError2.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1));//To remove when splitting cenancestor and seqerror
-                    forceJavaCore=true;//To remove when splitting cenancestor and seqerror
-            	}//To remove when splitting cenancestor and seqerror
 
             final Logger logger = Logger.getLogger("dr.evomodel");
             String coreName = "Java general";
@@ -160,13 +143,8 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                         coreName = "native general";
                         likelihoodCore = new NativeGeneralLikelihoodCore(patternList.getStateCount());
                     } else {
-                        if(sequenceError1 != null  && sequenceError2 != null){//To remove when splitting cenancestor and seqerror
-                        	coreName = "Rumen seqerror";//To remove when splitting cenancestor and seqerror
-                        	likelihoodCore = new SequenceErrorLikelihoodCore(patternList.getStateCount());//To remove when splitting cenancestor and seqerror
-                        } else { //To remove when splitting cenancestor and seqerror
-                        	coreName = "Java error";
-                        likelihoodCore = new GeneralLikelihoodCore(patternList.getStateCount());
-                        }//To remove when splitting cenancestor and seqerror
+                        	coreName = "Java general";
+                        	likelihoodCore = new GeneralLikelihoodCore(patternList.getStateCount());
                     }
                 }
             } else {
@@ -259,21 +237,6 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     public final LikelihoodCore getLikelihoodCore() {
         return likelihoodCore;
     }
-    
-    /**
-     * set sequence errors
-     */
-    public void setSequenceError1(double error1) {sequenceError1.setValue(0, error1);}
-    public void setSequenceError2(double error2) {sequenceError2.setValue(0, error2);}
-    /**
-     * @return sequenceError1
-     */
-    public final double getSequenceError1() { return sequenceError1.getValue(0); }
-
-    /**
-     * @return sequenceError2
-     */
-    public final double getSequenceError2() { return sequenceError2.getValue(0); }
     
     /**
      * set cenancestor date
@@ -563,11 +526,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                 likelihoodCore.setNodePartialsForUpdate(nodeNum);
 
                 if (integrateAcrossCategories) {
-                		if(sequenceError1 != null  && sequenceError2 != null){
-                			likelihoodCore.calculatePartials(childNum1, childNum2, nodeNum, getSequenceError1(), getSequenceError2());
-                		} else {
                 			likelihoodCore.calculatePartials(childNum1, childNum2, nodeNum);
-                		}
                 } else {
                     likelihoodCore.calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
                 }

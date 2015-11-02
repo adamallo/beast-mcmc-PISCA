@@ -157,13 +157,13 @@
 		<patterns idref="patterns"/>
 		<treeModel idref="treeModel"/>
 		<siteModel idref="siteModel"/>
-		<!-- Sequencing error: L(1|1)=1-alpha, L(0|1)=alpha L(0|0)=1-beta L(1|0)=beta -->
+		<!-- Sequencing error: L(1|1)=1-alpha, L(0|1)=alpha L(0|0)=1-beta L(1|0)=beta
                 <sequenceError1>
                       <parameter id="seqError1" value="6.3e-06" lower="6.3e-06" upper="6.3e-06"/>
                 </sequenceError1>
                 <sequenceError2>
                       <parameter id="seqError2" value="6.3e-06" lower="6.3e-06" upper="6.3e-06"/>
-                </sequenceError2>
+                </sequenceError2>-->
                 <!-- Cenancestor, time going backwards in years -->
                 <cenancestor>
                       <parameter id="luca" value="30.0" lower="30.0" upper="30.0"/>
