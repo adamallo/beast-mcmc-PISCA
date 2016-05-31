@@ -1,7 +1,5 @@
 /*
  * StrictClockBranchRates.java
- *
- * Provisionally modified by DM
  * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -73,10 +71,6 @@ public class StrictClockBranchRates extends AbstractBranchRateModel {
     }
 
     public double getBranchRate(final Tree tree, final NodeRef node) {
-        return rateParameter.getParameterValue(0);
-    }
-    
-    public double getBranchRate(double mrca, double cen) { //DM Cenancestor. To change when improving the implementation of the cenancestor.
         return rateParameter.getParameterValue(0);
     }
 

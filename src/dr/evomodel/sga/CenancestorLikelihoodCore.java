@@ -1,5 +1,7 @@
 /*
- * BranchRateModel.java
+ * CenancestorLikelihoodCore.java
+ *
+ * By Diego Mallo
  *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,22 +25,32 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.branchratemodel;
-
-import dr.evolution.tree.*;
-import dr.inference.model.Model;
+package dr.evomodel.sga;
+import dr.evomodel.treelikelihood.LikelihoodCore;
 
 /**
- * Date: Dec 13, 2004
- * Time: 1:59:24 PM
+ * CenancestorLikelihoodCore - An interface extending the core likelihood functions for trees with cenancestor
  *
- * @author Alexei Drummond
- * @version $Id: BranchRateModel.java,v 1.4 2005/05/24 20:25:57 rambaut Exp $
+ * @author Diego Mallo
  */
-public interface BranchRateModel extends Model, BranchRates, TreeTraitProvider, TreeTrait<Double> {
-    public static final String BRANCH_RATES = "branchRates";
-    public static final String RATE = "rate";
 
-    // This is inherited from BranchRates:
-    //double getBranchRate(Tree tree, NodeRef node);
+public interface CenancestorLikelihoodCore extends LikelihoodCore {
+    
+    /**
+     * Calculates partial likelihoods at a node with only one child
+     *
+     * @param nodeIndex1 the 'child 1' node
+     * @param nodeIndex3 the 'parent' node
+     */
+    void calculatePartials(int nodeIndex1, int nodeIndex3);
+
+    /**
+     * Calculates partial likelihoods at a node with only one child using a matrixMap.
+     *
+     * @param nodeIndex1 the 'child 1' node
+     * @param nodeIndex3 the 'parent' node
+     * @param matrixMap  a map of which matrix to use for each pattern
+     */
+    void calculatePartials(int nodeIndex1,int nodeIndex3, int[] matrixMap);
+
 }

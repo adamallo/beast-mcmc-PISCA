@@ -1,5 +1,7 @@
 /*
- * RateEpochBranchRateModel.java
+ * RateEpochCenancestorBranchRateModel.java
+ *
+ * Modified by Diego Mallo from RateEpochBranchRateModel.java
  *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,11 +25,10 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.branchratemodel;
+package dr.evomodel.sga;
 
 import dr.evolution.tree.NodeRef;
 import dr.evolution.tree.Tree;
-import dr.evomodelxml.branchratemodel.RateEpochBranchRateModelParser;
 import dr.inference.model.Model;
 import dr.inference.model.Parameter;
 import dr.inference.model.Variable;
@@ -40,7 +41,7 @@ import dr.inference.model.Variable;
  * @author Andrew Rambaut
  * @version $Id$
  */
-public class RateEpochBranchRateModel extends AbstractBranchRateModel {
+public class RateEpochCenancestorBranchRateModel extends AbstractCenancestorBranchRateModel {
 
     protected final Parameter[] timeParameters;
     protected final Parameter[] rateParameters;
@@ -51,10 +52,10 @@ public class RateEpochBranchRateModel extends AbstractBranchRateModel {
      * @param timeParameters an array of transition time parameters
      * @param rateParameters an array of rate parameters
      */
-    public RateEpochBranchRateModel(Parameter[] timeParameters,
+    public RateEpochCenancestorBranchRateModel(Parameter[] timeParameters,
                                     Parameter[] rateParameters) {
 
-        super(RateEpochBranchRateModelParser.RATE_EPOCH_BRANCH_RATES);
+        super(RateEpochCenancestorBranchRateModelParser.RATE_EPOCH_CENANCESTOR_BRANCH_RATES);
 
         this.timeParameters = timeParameters;
         for (Parameter parameter : timeParameters) {
@@ -120,6 +121,34 @@ public class RateEpochBranchRateModel extends AbstractBranchRateModel {
         }
         throw new IllegalArgumentException("root node doesn't have a rate!");
     }
+    
+    public double getBranchRate(double mrcaHeight, double lucaHeight) {
+        double height0 = mrcaHeight;
+        double height1 = lucaHeight;
+        int i = 0;
+
+        double rate = 0.0;
+        double lastHeight = height0;
+
+        // First find the epoch which contains the node height
+        while (i < timeParameters.length && height0 > timeParameters[i].getParameterValue(0)) {
+                i++;
+        }
+
+        // Now walk up the branch until we reach the last epoch or the height of the parent
+        while (i < timeParameters.length && height1 > timeParameters[i].getParameterValue(0)) {
+                // add the rate for that epoch multiplied by the time spent at that rate
+                rate += rateParameters[i].getParameterValue(0) * (timeParameters[i].getParameterValue(0) - lastHeight);
+                lastHeight = timeParameters[i].getParameterValue(0);
+                i++;
+        }
+
+        // Add that last rate segment
+        rate += rateParameters[i].getParameterValue(0) * (height1 - lastHeight);
+
+        // normalize the rate for the branch length
+        return normalizeRate(rate / (height1 - height0));
+}
 
     protected double normalizeRate(double rate) {
         return rate;

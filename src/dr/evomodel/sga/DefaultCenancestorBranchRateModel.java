@@ -1,5 +1,7 @@
 /*
- * DefaultBranchRateModel.java
+ * DefaultCenancestorBranchRateModel.java
+ *
+ * Modified by DM from DefaultBranchRateModel.java
  * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,7 +25,7 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.branchratemodel;
+package dr.evomodel.sga;
 
 import dr.evolution.tree.*;
 import dr.inference.model.Model;
@@ -34,10 +36,14 @@ import dr.inference.model.Variable;
  * @author Andrew Rambaut
  * @version $Id: DefaultBranchRateModel.java,v 1.4 2005/05/24 20:25:57 rambaut Exp $
  */
-public final class DefaultBranchRateModel implements BranchRateModel {
+public final class DefaultCenancestorBranchRateModel implements CenancestorBranchRateModel {
     public double getBranchRate(Tree tree, NodeRef node) {
         return 1.0;
     }
+    
+	public double getBranchRate(double mrcaHeight, double cenHeight) {
+		return 1.0;
+	}
 
     public void addModelListener(ModelListener listener) {
         // nothing to do

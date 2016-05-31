@@ -1,5 +1,7 @@
 /*
- * GeneralLikelihoodCore.java
+ * GeneralCenancestorLikelihoodCore.java
+ *
+ * Modified by Diego Mallo from GeneralLikelihoodCore.java
  *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,7 +25,9 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.treelikelihood;
+package dr.evomodel.sga;
+
+import dr.evomodel.sga.AbstractCenancestorLikelihoodCore;
 
 /**
  * GeneralLikelihoodCore - An implementation of LikelihoodCore for any data
@@ -33,14 +37,14 @@ package dr.evomodel.treelikelihood;
  * @author Andrew Rambaut
  */
 
-public class GeneralLikelihoodCore extends AbstractLikelihoodCore {
+public class GeneralCenancestorLikelihoodCore extends AbstractCenancestorLikelihoodCore {
 
 	/**
 	 * Constructor
 	 *
 	 * @param stateCount number of states
 	 */
-	public GeneralLikelihoodCore(int stateCount) {
+	public GeneralCenancestorLikelihoodCore(int stateCount) {
 		super(stateCount);
 	}
 
@@ -346,6 +350,145 @@ public class GeneralLikelihoodCore extends AbstractLikelihoodCore {
 			v += stateCount;
 		}
 	}
+	
+    /**
+     * Calculates partial likelihoods at a node when one child has states and one has partials.
+     */
+    protected void calculateStatesPruning(int[] states1, double[] matrices1,
+                                                           double[] partials3) {
+    	
+		int v = 0;
+
+		for (int l = 0; l < matrixCount; l++) {
+
+			for (int k = 0; k < patternCount; k++) {
+
+				int state1 = states1[k];
+
+				int w = l * matrixSize;
+
+                if (state1 < stateCount) {
+
+					for (int i = 0; i < stateCount; i++) {
+
+						partials3[v] = matrices1[w + state1];
+
+						v++;
+						w += stateCount;
+					}
+
+				} else {
+					// The child has a gap or unknown state so set partials to 1
+
+					for (int j = 0; j < stateCount; j++) {
+						partials3[v] = 1.0;
+						v++;
+					}
+				}
+			}
+		}
+    	
+    }
+
+    /**
+     * Calculates partial likelihoods at a node when both children have partials.
+     */
+    protected void calculatePartialsPruning(double[] partials1, double[] matrices1,
+                                                             double[] partials3) {
+		double sum1;
+
+		int u = 0;
+		int v = 0;
+
+		for (int l = 0; l < matrixCount; l++) {
+
+			for (int k = 0; k < patternCount; k++) {
+
+                int w = l * matrixSize;
+
+				for (int i = 0; i < stateCount; i++) {
+
+					sum1 = 0.0;
+
+					for (int j = 0; j < stateCount; j++) {
+						sum1 += matrices1[w] * partials1[v + j];
+
+						w++;
+					}
+
+					partials3[u] = sum1;
+					u++;
+				}
+				v += stateCount;
+			}
+		}
+    }
+    
+    /**
+     * Calculates partial likelihoods at a node when one child has states and one has partials.
+     */
+    protected void calculateStatesPruning(int[] states1, double[] matrices1,
+                                                           double[] partials3, int[] matrixMap) {
+		int v = 0;
+
+		for (int k = 0; k < patternCount; k++) {
+
+			int state1 = states1[k];
+
+			int w = matrixMap[k] * matrixSize;
+
+			if (state1 < stateCount) {
+
+				for (int i = 0; i < stateCount; i++) {
+
+					partials3[v] = matrices1[w + state1];
+
+					v++;
+					w += stateCount;
+				}
+
+			} else {
+				// The child has a gap or unknown state so set partials to 1
+
+				for (int j = 0; j < stateCount; j++) {
+					partials3[v] = 1.0;
+					v++;
+				}
+			}
+		}
+    	
+    }
+    
+    /**
+     * Calculates partial likelihoods at a node when both children have partials.
+     */
+    protected void calculatePartialsPruning(double[] partials1, double[] matrices1,
+                                                             double[] partials3, int[] matrixMap) {
+		double sum1;
+
+		int u = 0;
+		int v = 0;
+
+		for (int k = 0; k < patternCount; k++) {
+
+			int w = matrixMap[k] * matrixSize;
+
+			for (int i = 0; i < stateCount; i++) {
+
+				sum1 = 0.0;
+
+				for (int j = 0; j < stateCount; j++) {
+					sum1 += matrices1[w] * partials1[v + j];
+					w++;
+				}
+
+				partials3[u] = sum1;
+				u++;
+			}
+			v += stateCount;
+		}
+    	
+    }
 
 	/**
 	 * Integrates partials across categories.
@@ -384,12 +527,43 @@ public class GeneralLikelihoodCore extends AbstractLikelihoodCore {
 		}
 	}
 
+	
+/*	  *//**
+     * Calculates pattern log likelihoods at a node.
+     * @param partials the partials used to calculate the likelihoods
+     * @param probs the transition probability for branch length luca-mrca
+     * @param outLogLikelihoods an array into which the likelihoods will go
+     *//*//RUMEN (DM)
+    public void calculateLogLikelihoods(double[] partials, double[] probs, double[] outLogLikelihoods)
+    {
+
+        int v = 0;
+        for (int k = 0; k < patternCount; k++) {
+
+            double logScalingFactor = getLogScalingFactor(k);
+
+            double sum = 0.0;
+ 
+            for (int i = 0; i < stateCount; i++) {
+
+                // Final calculation
+                partials[v] = partials[v]*probs[i*2]+partials[v]*probs[(i*2)+1]; #This was valid for the binary LOH model, but I have to generalize it.
+                sum += partials[v];
+                v++;
+            }
+            //System.out.println("pattern"+k+"L(0)="+partials[v-2]+" L(1)="+partials[v-1]);
+            outLogLikelihoods[k] = Math.log(sum) + logScalingFactor;
+        }
+        //checkScaling(); // Commented out by DM
+    }*/
+
 	/**
 	 * Calculates pattern log likelihoods at a node.
 	 * @param partials the partials used to calculate the likelihoods
 	 * @param frequencies an array of state frequencies
 	 * @param outLogLikelihoods an array into which the likelihoods will go
 	 */
+	 
 	public void calculateLogLikelihoods(double[] partials, double[] frequencies, double[] outLogLikelihoods)
 	{
         int v = 0;
@@ -404,6 +578,5 @@ public class GeneralLikelihoodCore extends AbstractLikelihoodCore {
             outLogLikelihoods[k] = Math.log(sum) + getLogScalingFactor(k);
 		}
 	}
-
 
 }

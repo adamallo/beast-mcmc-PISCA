@@ -1,5 +1,7 @@
 /*
- * CompoundBranchRateModel.java
+ * StrictClockCenancestorBranchRates.java
+ * 
+ * Modified by Diego Mallo from StrictClockBranchRates.java
  * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,44 +25,39 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.branchratemodel;
+package dr.evomodel.sga;
 
 import dr.evolution.tree.NodeRef;
 import dr.evolution.tree.Tree;
-import dr.evomodelxml.branchratemodel.CompoundBranchRateModelParser;
-import dr.inference.model.AbstractModel;
+import dr.evomodelxml.branchratemodel.StrictClockBranchRatesParser;
 import dr.inference.model.Model;
 import dr.inference.model.Parameter;
 import dr.inference.model.Variable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
- * Takes a collection of BranchRateModels and returns the product of the respective rates. In order for this to
- * work, one model should drive the actual rate of evolution and the others should be set up to provide
- * relative rates.
+ * @author Alexei Drummond
  * @author Andrew Rambaut
- * @version $Id:=$
+ * @version $Id: StrictClockBranchRates.java,v 1.3 2006/01/09 17:44:30 rambaut Exp $
  */
-public class CompoundBranchRateModel extends AbstractBranchRateModel {
+public class StrictClockCenancestorBranchRates extends AbstractCenancestorBranchRateModel {
 
-    private final List<BranchRateModel> branchRateModels = new ArrayList<BranchRateModel>();
+    private final Parameter rateParameter;
 
-    public CompoundBranchRateModel(Collection<BranchRateModel> branchRateModels) {
-        super(CompoundBranchRateModelParser.COMPOUND_BRANCH_RATE_MODEL);
-        for (BranchRateModel branchRateModel : branchRateModels) {
-            addModel(branchRateModel);
-            this.branchRateModels.add(branchRateModel);
-        }
+    public StrictClockCenancestorBranchRates(Parameter rateParameter) {
+
+        super(StrictClockCenancestorBranchRatesParser.STRICT_CLOCK_CENANCESTOR_BRANCH_RATES);
+
+        this.rateParameter = rateParameter;
+
+        addVariable(rateParameter);
     }
 
     public void handleModelChangedEvent(Model model, Object object, int index) {
-        fireModelChanged();
+        // nothing to do
     }
 
     protected final void handleVariableChangedEvent(Variable variable, int index, Parameter.ChangeType type) {
+        fireModelChanged();
     }
 
     protected void storeState() {
@@ -76,11 +73,11 @@ public class CompoundBranchRateModel extends AbstractBranchRateModel {
     }
 
     public double getBranchRate(final Tree tree, final NodeRef node) {
-        double rate = 1.0;
-        for (BranchRateModel branchRateModel : branchRateModels) {
-            rate *= branchRateModel.getBranchRate(tree, node);
-        }
-        return rate;
+        return rateParameter.getParameterValue(0);
+    }
+    
+    public double getBranchRate(double mrca, double cen) {
+        return rateParameter.getParameterValue(0);
     }
 
 }

@@ -1,7 +1,5 @@
 /*
  * LocalClockModel.java
- *
- * * Provisionally modified by DM
  * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -348,10 +346,4 @@ public class LocalClockModel extends AbstractBranchRateModel {
     }
 
     private final Helper helper = new Helper();
-
-	@Override
-	public double getBranchRate(double mrcaHeight, double cenHeight) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

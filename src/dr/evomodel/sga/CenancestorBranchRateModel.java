@@ -1,5 +1,7 @@
 /*
- * BranchRateModel.java
+ * CenancestorBranchRateModel.java
+ *
+ * Modified by DM from BranchRateModel.java
  *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,7 +25,7 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.branchratemodel;
+package dr.evomodel.sga;
 
 import dr.evolution.tree.*;
 import dr.inference.model.Model;
@@ -35,10 +37,11 @@ import dr.inference.model.Model;
  * @author Alexei Drummond
  * @version $Id: BranchRateModel.java,v 1.4 2005/05/24 20:25:57 rambaut Exp $
  */
-public interface BranchRateModel extends Model, BranchRates, TreeTraitProvider, TreeTrait<Double> {
+public interface CenancestorBranchRateModel extends Model, BranchRates, TreeTraitProvider, TreeTrait<Double> {
     public static final String BRANCH_RATES = "branchRates";
     public static final String RATE = "rate";
 
     // This is inherited from BranchRates:
     //double getBranchRate(Tree tree, NodeRef node);
+    double getBranchRate(double mrcaHeight, double cenHeight);
 }

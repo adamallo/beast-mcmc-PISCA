@@ -1,7 +1,5 @@
 /*
  * ScaledTreeLengthRateModel.java
- *
- * * Provisionally modified by DM
  * 
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -130,11 +128,5 @@ public class ScaledTreeLengthRateModel extends AbstractBranchRateModel {
      */
     protected void acceptState() {
     }
-
-	@Override
-	public double getBranchRate(double mrcaHeight, double cenHeight) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 }

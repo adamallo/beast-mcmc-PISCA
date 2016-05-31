@@ -127,14 +127,14 @@
  -->
 	
 	        <!-- The strict clock with 2 epochs (Uniform rates across branches)                        -->
-        <rateEpochBranchRates id="branchRates">
+        <rateCenancestorEpochBranchRates id="branchRates">
                 <rate>
                    <parameter id="anc.clock.rate" value="0.00118279760303503" lower="1.18279760303503e-07" upper="11.8279760303503"/>
                 </rate>
                 <epoch id="epoch1" transitionTime="5">
                    <parameter id="rec.clock.rate" value="0.00118279760303503" lower="1.18279760303503e-07" upper="11.8279760303503"/>
                 </epoch>
-        </rateEpochBranchRates>
+        </rateCenancestorEpochBranchRates>
 
 	<lohModel id="loh_subsmodel">
 		<frequencies>
@@ -198,7 +198,7 @@
                 <cenancestor>
                       <parameter id="luca" value="30.0" lower="30.0" upper="30.0"/>
                 </cenancestor>
-		<strictClockBranchRates idref="branchRates"/>
+		<rateEpochBranchRates idref="branchRates"/>
 	</cenancestorTreeLikelihood>
 
 	<!-- Likelihood for tree given sequence data                                
@@ -213,7 +213,7 @@
 	<operators id="operators" optimizationSchedule="default">
 		<scaleOperator scaleFactor="0.75" weight="3">
                         <parameter idref="loh.alpha"/>
-        </scaleOperator>
+        	</scaleOperator>
 		<scaleOperator scaleFactor="0.75" weight="3">
 				<parameter idref="anc.clock.rate"/>
 		</scaleOperator>
@@ -256,19 +256,19 @@
 			<down>
 					<parameter idref="treeModel.allInternalNodeHeights"/>
 			</down>
-        </upDownOperator>
-        <upDownOperator scaleFactor="0.75" weight="3">
+        	</upDownOperator>
+        	<upDownOperator scaleFactor="0.75" weight="3">
 			<up>
 					<parameter idref="rec.clock.rate"/>
 			</up>
 			<down>
 					<parameter idref="treeModel.allInternalNodeHeights"/>
 			</down>
-        </upDownOperator>
+        	</upDownOperator>
 	</operators>
 
 	<!-- Define MCMC                                                             -->
-	<mcmc id="mcmc" chainLength="200000" autoOptimize="true" operatorAnalysis="my_test.ops">
+	<mcmc id="mcmc" chainLength="2000000" autoOptimize="true" operatorAnalysis="my_test.ops">
 		<posterior id="posterior">
 			<prior id="prior">
                                 <coalescentLikelihood idref="coalescent"/>

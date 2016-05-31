@@ -1,5 +1,7 @@
 /*
- * DiscretizedBranchRates.java
+ * DiscretizedCenancestorBranchRates.java
+ *
+ * Modified by Diego Mallo from DiscretizedBranchRates.java
  *
  * Copyright (c) 2002-2015 Alexei Drummond, Andrew Rambaut and Marc Suchard
  *
@@ -23,7 +25,7 @@
  * Boston, MA  02110-1301  USA
  */
 
-package dr.evomodel.branchratemodel;
+package dr.evomodel.sga;
 
 import dr.evolution.tree.NodeRef;
 import dr.evolution.tree.Tree;
@@ -37,12 +39,17 @@ import dr.inference.model.Variable;
 import dr.math.MathUtils;
 
 /**
+ * I think this is not necessary, I'm importing it just in case.
+ * TODO: Check if this is required.
+ */
+
+/**
  * @author Alexei Drummond
  * @author Andrew Rambaut
  * @author Michael Defoin Platel
  * @version $Id: DiscretizedBranchRates.java,v 1.11 2006/01/09 17:44:30 rambaut Exp $
  */
-public class DiscretizedBranchRates extends AbstractBranchRateModel {
+public class DiscretizedCenancestorBranchRates extends AbstractCenancestorBranchRateModel {
     // Turn on an off the caching on rates for categories -
     // if off then the rates will be flagged to update on
     // a restore.
@@ -73,7 +80,7 @@ public class DiscretizedBranchRates extends AbstractBranchRateModel {
 
     //overSampling control the number of effective categories
 
-    public DiscretizedBranchRates(
+    public DiscretizedCenancestorBranchRates(
             TreeModel tree,
             Parameter rateCategoryParameter,
             ParametricDistributionModel model,
@@ -82,7 +89,7 @@ public class DiscretizedBranchRates extends AbstractBranchRateModel {
 
     }
 
-    public DiscretizedBranchRates(
+    public DiscretizedCenancestorBranchRates(
             TreeModel tree,
             Parameter rateCategoryParameter,
             ParametricDistributionModel model,
@@ -197,6 +204,20 @@ public class DiscretizedBranchRates extends AbstractBranchRateModel {
         }
 
         int rateCategory = (int) Math.round(rateCategories.getNodeValue(tree, node));
+
+        //System.out.println(rates[rateCategory] + "\t"  + rateCategory);
+        return rates[currentRateArrayIndex][rateCategory] * scaleFactor;
+    }
+    
+    public final double getBranchRate(final double mrca, final double cen) {
+    	
+        //assert !tree.isRoot(node) : "root node doesn't have a rate!";
+
+        if (updateRateCategories) {
+            setupRates();
+        }
+
+        int rateCategory = 0;
 
         //System.out.println(rates[rateCategory] + "\t"  + rateCategory);
         return rates[currentRateArrayIndex][rateCategory] * scaleFactor;

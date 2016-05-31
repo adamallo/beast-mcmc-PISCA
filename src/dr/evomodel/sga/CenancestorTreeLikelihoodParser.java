@@ -28,11 +28,10 @@
 package dr.evomodel.sga;
 
 import dr.evolution.alignment.PatternList;
-import dr.evomodel.branchratemodel.BranchRateModel;
 import dr.evomodel.sitemodel.SiteModel;
 import dr.evomodel.tree.TreeModel;
 import dr.evomodel.treelikelihood.TipStatesModel;
-import dr.inference.model.Variable;
+import dr.inference.model.Parameter;
 import dr.xml.*;
 
 /**
@@ -48,8 +47,10 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
     public static final String SCALING_THRESHOLD = "scalingThreshold";
     public static final String FORCE_JAVA_CORE = "forceJavaCore";
     public static final String FORCE_RESCALING = "forceRescaling";
-    public static final String CENANCESTOR = "cenancestor";
-
+    public static final String CENANCESTOR_HEIGHT = "cenancestorHeight";
+    public static final String CENANCESTOR_BRANCH = "cenancestorBranch";
+    public static final String USE_AS_STATISTIC= "useAsStatistic";
+    
     public String getParserName() {
         return TREE_LIKELIHOOD;
     }
@@ -69,9 +70,13 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
         TreeModel treeModel = (TreeModel) xo.getChild(TreeModel.class);
         SiteModel siteModel = (SiteModel) xo.getChild(SiteModel.class);
 
-        BranchRateModel branchRateModel = (BranchRateModel) xo.getChild(BranchRateModel.class);
+        CenancestorBranchRateModel branchRateModel = (CenancestorBranchRateModel) xo.getChild(CenancestorBranchRateModel.class);
         
-        Variable cenancestor = (Variable) xo.getElementFirstChild(CENANCESTOR);
+        Parameter cenancestor = (Parameter) xo.getElementFirstChild(CENANCESTOR_HEIGHT);
+        
+        Parameter cenancestorBranch= (Parameter) xo.getElementFirstChild(CENANCESTOR_BRANCH);
+        
+        //Parameter AsStatistic=(Parameter) xo.getChild(USE_AS_STATISTIC);
 
         TipStatesModel tipStatesModel = (TipStatesModel) xo.getChild(TipStatesModel.class);
         if (tipStatesModel != null && tipStatesModel.getPatternList() != null) {
@@ -91,6 +96,8 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
                 branchRateModel,
                 tipStatesModel,
                 cenancestor,
+                cenancestorBranch,
+                //AsStatistic,
                 useAmbiguities, allowMissingTaxa, storePartials, forceJavaCore, forceRescaling);
     }
 
@@ -119,9 +126,13 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
             new ElementRule(PatternList.class),
             new ElementRule(TreeModel.class),
             new ElementRule(SiteModel.class),
-            new ElementRule(BranchRateModel.class, true),
+            new ElementRule(CenancestorBranchRateModel.class, true),
             new ElementRule(TipStatesModel.class, true),
-            new ElementRule(CENANCESTOR,
-                    new XMLSyntaxRule[]{new ElementRule(Variable.class)},true),
+            new ElementRule(CENANCESTOR_HEIGHT,
+                    new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
+            new ElementRule(CENANCESTOR_BRANCH,
+                    new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
+            new ElementRule(USE_AS_STATISTIC,
+                    new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
     };
 }

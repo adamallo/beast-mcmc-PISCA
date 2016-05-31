@@ -35,18 +35,10 @@ import dr.evolution.tree.NodeRef;
 import dr.evolution.tree.Tree;
 import dr.evolution.util.Taxon;
 import dr.evolution.util.TaxonList;
-import dr.evomodel.branchratemodel.BranchRateModel;
-import dr.evomodel.branchratemodel.DefaultBranchRateModel;
 import dr.evomodel.sitemodel.SiteModel;
 import dr.evomodel.substmodel.FrequencyModel;
 import dr.evomodel.tree.TreeModel;
 import dr.evomodel.treelikelihood.AbstractTreeLikelihood;
-import dr.evomodel.treelikelihood.AminoAcidLikelihoodCore;
-import dr.evomodel.treelikelihood.GeneralLikelihoodCore;
-import dr.evomodel.treelikelihood.NativeAminoAcidLikelihoodCore;
-import dr.evomodel.treelikelihood.NativeGeneralLikelihoodCore;
-import dr.evomodel.treelikelihood.NativeNucleotideLikelihoodCore;
-import dr.evomodel.treelikelihood.NucleotideLikelihoodCore;
 import dr.evomodel.treelikelihood.TipStatesModel;
 import dr.evomodel.treelikelihood.LikelihoodCore;
 import dr.inference.model.Model;
@@ -65,7 +57,9 @@ import java.util.logging.Logger;
 
 public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     private static final boolean DEBUG = false;
-    private Variable<Double> cenancestor = null;
+    private Parameter cenancestorHeight = null;
+    private Parameter cenancestorBranch = null;
+    private boolean branchRules=true;
 
     /**
      * Constructor.
@@ -73,9 +67,11 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     public CenancestorTreeLikelihood(PatternList patternList,
                           TreeModel treeModel,
                           SiteModel siteModel,
-                          BranchRateModel branchRateModel,
+                          CenancestorBranchRateModel branchRateModel,
                           TipStatesModel tipStatesModel,
-                          Variable cenancestor,
+                          Parameter cenancestorHeight,
+                          Parameter cenancestorBranch,
+                         // Parameter asStatistic,
                           boolean useAmbiguities,
                           boolean allowMissingTaxa,
                           boolean storePartials,
@@ -85,6 +81,11 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
         super(CenancestorTreeLikelihoodParser.TREE_LIKELIHOOD, patternList, treeModel);
 
         this.storePartials = storePartials;
+        nodeCount=treeModel.getNodeCount()+1;
+        updateNode = new boolean[nodeCount];
+        for (int i = 0; i < nodeCount; i++) {
+            updateNode[i] = true;
+        }
 
         try {
             this.siteModel = siteModel;
@@ -99,13 +100,45 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
 
             this.categoryCount = siteModel.getCategoryCount();
             
-            this.cenancestor = cenancestor;
-            	addVariable(cenancestor);
-            	cenancestor.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1));
-
+            this.cenancestorHeight = cenancestorHeight;
+            	addVariable(cenancestorHeight);
+            	cenancestorHeight.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1)); //TODO The lower bound should be the maximum leaf height
+            	
+            	this.cenancestorBranch= cenancestorBranch;
+            	cenancestorBranch.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0,1)); //TODO The upper bound should be the maximum leaf height
+            	addVariable(cenancestorBranch);
+            	
+            	//if (asStatistic == cenancestorHeight){
+            	//	this.branchRules=true;
+            	//}
+            	
+            //	if (branchRules==true){
+            		updateCenancestorHeight(); //Trying to avoid improper initial values
+            //	}
+            // 	else{
+            //		updateCenancestorBranch();
+            //	}
+        
             final Logger logger = Logger.getLogger("dr.evomodel");
             String coreName = "Java general";
-            if (integrateAcrossCategories) {
+            
+            /**
+             * TODO: Check if is worthy to implement other datatypes.
+             */
+            
+            final DataType dataType = patternList.getDataType();
+            
+            if (dataType instanceof dr.evolution.datatype.TwoStates)
+            {
+            		coreName = "Java cenancestor binary";
+            		cenancestorlikelihoodCore = new GeneralCenancestorLikelihoodCore(patternList.getStateCount());
+            }
+            else if (dataType instanceof dr.evolution.datatype.GeneralDataType) {
+        			coreName = "Java cenancestor CNV";
+        			cenancestorlikelihoodCore = new GeneralCenancestorLikelihoodCore(patternList.getStateCount());
+            }
+
+/*            if (integrateAcrossCategories) {
 
                 final DataType dataType = patternList.getDataType();
 
@@ -149,26 +182,26 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                 }
             } else {
                 likelihoodCore = new GeneralLikelihoodCore(patternList.getStateCount());
-            }
+            }*/
             {
-              final String id = getId();
-              logger.info("TreeLikelihood(" + ((id != null) ? id : treeModel.getId()) + ") using " + coreName + " likelihood core");
+            		final String id = getId();
+            		logger.info("TreeLikelihood(" + ((id != null) ? id : treeModel.getId()) + ") using " + coreName + " likelihood core");
 
-              logger.info("  " + (useAmbiguities ? "Using" : "Ignoring") + " ambiguities in tree likelihood.");
-              logger.info("  With " + patternList.getPatternCount() + " unique site patterns.");
+            		logger.info("  " + (useAmbiguities ? "Using" : "Ignoring") + " ambiguities in tree likelihood.");
+            		logger.info("  With " + patternList.getPatternCount() + " unique site patterns.");
             }
 
             if (branchRateModel != null) {
                 this.branchRateModel = branchRateModel;
                 logger.info("Branch rate model used: " + branchRateModel.getModelName());
             } else {
-                this.branchRateModel = new DefaultBranchRateModel();
+                this.branchRateModel = new DefaultCenancestorBranchRateModel();
             }
             addModel(this.branchRateModel);
 
             probabilities = new double[stateCount * stateCount];
 
-            likelihoodCore.initialize(nodeCount, patternCount, categoryCount, integrateAcrossCategories);
+            cenancestorlikelihoodCore.initialize(nodeCount, patternCount, categoryCount, integrateAcrossCategories);
 
             int extNodeCount = treeModel.getExternalNodeCount();
             int intNodeCount = treeModel.getInternalNodeCount();
@@ -189,7 +222,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                     }
 
                     tipStatesModel.setStates(patternList, index, i, id);
-                    likelihoodCore.createNodePartials(i);
+                    cenancestorlikelihoodCore.createNodePartials(i);
                 }
 
                 addModel(tipStatesModel);
@@ -205,25 +238,26 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                                     ", is not found in patternList, " + patternList.getId());
                         }
                         if (useAmbiguities) {
-                            setMissingPartials(likelihoodCore, i);
+                            setMissingPartials((LikelihoodCore)cenancestorlikelihoodCore, i);
                         } else {
-                            setMissingStates(likelihoodCore, i);
+                            setMissingStates((LikelihoodCore)cenancestorlikelihoodCore, i);
                         }
                     } else {
                         if (useAmbiguities) {
-                            setPartials(likelihoodCore, patternList, categoryCount, index, i);
+                            setPartials((LikelihoodCore)cenancestorlikelihoodCore, patternList, categoryCount, index, i);
                         } else {
-                            setStates(likelihoodCore, patternList, index, i);
+                            setStates((LikelihoodCore)cenancestorlikelihoodCore, patternList, index, i);
                         }
                     }
                 }
             }
-            for (int i = 0; i < intNodeCount; i++) {
-                likelihoodCore.createNodePartials(extNodeCount + i);
+            for (int i = 0; i <= intNodeCount; i++) { //Added one step for the cenancestor
+                cenancestorlikelihoodCore.createNodePartials(extNodeCount + i);
             }
-
+            
+            
             if (forceRescaling) {
-                likelihoodCore.setUseScaling(true);
+                cenancestorlikelihoodCore.setUseScaling(true);
                 logger.info("  Forcing use of partials rescaling.");
             }
 
@@ -234,18 +268,69 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
         addStatistic(new SiteLikelihoodsStatistic());
     }
 
-    public final LikelihoodCore getLikelihoodCore() {
-        return likelihoodCore;
+    public final CenancestorLikelihoodCore getLikelihoodCore() {
+        return cenancestorlikelihoodCore;
     }
+    
+    //
+    // Cenancestor-related functions
+    //
     
     /**
      * set cenancestor date
      */
-    public void setCenancestor(double cen) {cenancestor.setValue(0, cen);}
+    public void setCenancestorHeight(double cen) {cenancestorHeight.setParameterValue(0, cen);}
     /**
      * @return cenancestor
      */
-    public final double getCenancestor() { return cenancestor.getValue(0); }
+    public final double getCenancestorHeight() { return cenancestorHeight.getValue(0); }
+    
+    /**
+     * set cenancestor_branch length
+     */
+    public void setCenancestorBranch(double cen) {cenancestorBranch.setParameterValue(0, cen);}
+    /**
+     * @return cenancestor
+     */
+    public final double getCenancestorBranch() { return cenancestorBranch.getValue(0); }
+    
+    private final void updateCenancestorBranch()
+    {
+    		cenancestorBranch.setParameterValueQuietly(0, getCenancestorHeight()-treeModel.getNodeHeight(treeModel.getRoot()));
+    }
+    
+    private final void updateCenancestorHeight()
+    {
+    		cenancestorHeight.setParameterValueQuietly(0, treeModel.getNodeHeight(treeModel.getRoot())+getCenancestorBranch());
+    }
+    
+    // **************************************************************
+    // VariableListener IMPLEMENTATION
+    // **************************************************************
+
+    /**
+     * This method is called whenever a parameter is changed.
+     * <p/>
+     * It is strongly recommended that the model component sets a "dirty" flag and does no
+     * further calculations. Recalculation is typically done when the model component is asked for
+     * some information that requires them. This mechanism is 'lazy' so that this method
+     * can be safely called multiple times with minimal computational cost.
+     */
+    protected void handleVariableChangedEvent(Variable variable, int index, Parameter.ChangeType type)
+    {
+    		if (variable==this.cenancestorHeight)
+    		{
+    			updateNode(treeModel.getRoot());
+    			updateCenancestorBranch();
+    			//updateAllNodes();
+    		}
+    		else if (variable==this.cenancestorBranch)
+    		{
+    			updateNode(treeModel.getRoot());
+    			updateCenancestorHeight();
+    			//updateAllNodes();
+    		}
+    }
     
     
     // **************************************************************
@@ -267,6 +352,14 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                     // is added to a branch, removed from a branch or its height or
                     // rate changes.
                     updateNodeAndChildren(((TreeModel.TreeChangedEvent) object).getNode());
+                    if(((TreeModel.TreeChangedEvent) object).getNode()==treeModel.getRoot()); {
+                    		updateNode(treeModel.getRoot()); //If the root changes we need to update it, since we need to recalculate the cenancestor branch.
+                    		//if(branchRules){
+                    			updateCenancestorHeight(); //The root changes, and therefore the cenancestor height must be recalculated (acts as statistic), since the cenancestor branch rules (acts as a parameter, changed only by operators)
+                    		//} else {
+                    		//	updateCenancestorBranch(); //The root changes, and therefore the cenancestor branch must be recalculated (acts as statistic) , since the cenancestor height rules (acts as a parameter, changed only by operators)
+                    		//}
+                    }
 
                 } else if (((TreeModel.TreeChangedEvent) object).isTreeChanged()) {
                     // Full tree events result in a complete updating of the tree likelihood
@@ -324,7 +417,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     protected void storeState() {
 
         if (storePartials) {
-            likelihoodCore.storeState();
+            cenancestorlikelihoodCore.storeState();
         }
         super.storeState();
 
@@ -336,7 +429,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     protected void restoreState() {
 
         if (storePartials) {
-            likelihoodCore.restoreState();
+            cenancestorlikelihoodCore.restoreState();
         } else {
             updateAllNodes();
         }
@@ -373,9 +466,9 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
             int extNodeCount = treeModel.getExternalNodeCount();
             for (int index = 0; index < extNodeCount; index++) {
                 if (updateNode[index]) {
-                    likelihoodCore.setNodePartialsForUpdate(index);
+                    cenancestorlikelihoodCore.setNodePartialsForUpdate(index);
                     tipStatesModel.getTipPartials(index, tipPartials);
-                    likelihoodCore.setCurrentNodePartials(index, tipPartials);
+                    cenancestorlikelihoodCore.setCurrentNodePartials(index, tipPartials);
                 }
             }
         }
@@ -394,7 +487,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
             Logger.getLogger("dr.evomodel").info("TreeLikelihood, " + this.getId() + ", turning on partial likelihood scaling to avoid precision loss");
 
             // We probably had an underflow... turn on scaling
-            likelihoodCore.setUseScaling(true);
+            cenancestorlikelihoodCore.setUseScaling(true);
 
             // and try again...
             updateAllNodes();
@@ -478,12 +571,13 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     protected boolean traverse(Tree tree, NodeRef node) {
 
         boolean update = false;
+        boolean rootUpdated = false;
 
         int nodeNum = node.getNumber();
 
         NodeRef parent = tree.getParent(node);
 
-        // First update the transition probability matrix(ices) for this branch
+        // First update the transition probability matrix(ices) for this branch if it is a normal branch
         if (parent != null && updateNode[nodeNum]) {
 
             final double branchRate = branchRateModel.getBranchRate(tree, node);
@@ -495,16 +589,34 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                 throw new RuntimeException("Negative branch length: " + branchTime);
             }
 
-            likelihoodCore.setNodeMatrixForUpdate(nodeNum);
+            cenancestorlikelihoodCore.setNodeMatrixForUpdate(nodeNum);
 
             for (int i = 0; i < categoryCount; i++) {
 
                 double branchLength = siteModel.getRateForCategory(i) * branchTime;
                 siteModel.getSubstitutionModel().getTransitionProbabilities(branchLength, probabilities);
-                likelihoodCore.setNodeMatrix(nodeNum, i, probabilities);
+                cenancestorlikelihoodCore.setNodeMatrix(nodeNum, i, probabilities);
             }
 
             update = true;
+        }
+        else if (parent == null && cenancestorHeight != null && updateNode[nodeNum]) //The root has to be updated
+        {
+    			// First update the transition probability matrix(ices) for the root-cenancestor fake branch
+    			rootUpdated=true;
+    			// Get the operational time of the fake branch from the root to the cenancestor 
+    			double rootHeight = treeModel.getNodeHeight(treeModel.getRoot());
+    			double branchRate = branchRateModel.getBranchRate(rootHeight, getCenancestorHeight()); //TODO: Could this be easily improved? I would do to adapt the tree structure and abstact tree likelihood
+    			double branchTime = branchRate * getCenancestorBranch() ; //TODO: Could this be easily improved? The same as before
+
+    		
+    			for (int i = 0; i < categoryCount; i++) 
+    			{
+    				double branchLength = siteModel.getRateForCategory(i) * branchTime;
+    				siteModel.getSubstitutionModel().getTransitionProbabilities(branchLength, probabilities);
+    				cenancestorlikelihoodCore.setNodeMatrix(nodeNum, i, probabilities);
+
+    			}
         }
 
         // If the node is internal, update the partial likelihoods.
@@ -518,54 +630,52 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
             final boolean update2 = traverse(tree, child2);
 
             // If either child node was updated then update this node too
-            if (update1 || update2) {
+            if (update1 || update2 || rootUpdated) {
 
-                final int childNum1 = child1.getNumber();
-                final int childNum2 = child2.getNumber();
+                if (update1 || update2) {
+            			final int childNum1 = child1.getNumber();
+            			final int childNum2 = child2.getNumber();
 
-                likelihoodCore.setNodePartialsForUpdate(nodeNum);
+            			cenancestorlikelihoodCore.setNodePartialsForUpdate(nodeNum);
 
-                if (integrateAcrossCategories) {
-                			likelihoodCore.calculatePartials(childNum1, childNum2, nodeNum);
-                } else {
-                    likelihoodCore.calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
+            			if (integrateAcrossCategories) {
+            				cenancestorlikelihoodCore.calculatePartials(childNum1, childNum2, nodeNum);
+            			} else {
+            				cenancestorlikelihoodCore.calculatePartials(childNum1, childNum2, nodeNum, siteCategories);
+            			}
+
+            			if (COUNT_TOTAL_OPERATIONS) {
+            				totalOperationCount ++;
+            			}
                 }
-
-                if (COUNT_TOTAL_OPERATIONS) {
-                    totalOperationCount ++;
-                }
-
+                
                 if (parent == null) {
-                    // No parent this is the root of the tree -
-                    // calculate the pattern likelihoods
+                    // No parent this is the root of the tree
+                	
+                    double[] partials;
+                    int nodeNumCenan = getCenancestorIndex();
+                    
+                    if(cenancestorHeight != null) {
+                    		if (rootUpdated) {
+                        		// Calculate the partials at the cenancestor. The transition matrix of the root was calculated before.
+                        		cenancestorlikelihoodCore.setNodePartialsForUpdate(nodeNumCenan);
+
+                        		if (integrateAcrossCategories) {
+                        			cenancestorlikelihoodCore.calculatePartials(nodeNum, nodeNumCenan);
+                        		} else {
+                        			cenancestorlikelihoodCore.calculatePartials(nodeNum, nodeNumCenan, siteCategories);
+                        		}
+                    		}
+                    		
+                    		partials = getCenancestorPartials();
+                    }
+                    else { //Using the cenancestor model without cenancestor date. It assumes that the root of the tree is the cenancestor. Not tested. It shouldn't be normally used either.
+                    		partials = getRootPartials();
+                    }
+                    
+                    	// calculate the pattern likelihoods
                     double[] frequencies = frequencyModel.getFrequencies();
-
-                    double[] partials = getRootPartials();
-                    
-                    if(cenancestor != null)
-              		{
-                    		double rootHeight = treeModel.getNodeHeight(treeModel.getRoot());
-                    		// Special root branch rate
-            				double branchRate = branchRateModel.getBranchRate(rootHeight, getCenancestor());
-
-            				// Get the operational time of the branch
-            				// We still need an upper bound on root height to be always less than time of cenancestor
-            				// so that the branch length between MRCA and cenacestor is greater than 0
-            				double branchTime = branchRate * ( getCenancestor() - rootHeight );
-
-            				if (branchTime < 0.0) 
-            				{
-              					throw new RuntimeException("Negative branch length: " + branchTime);
-            				}
-            				for (int i = 0; i < categoryCount; i++) 
-            				{
-            					double branchLength = siteModel.getRateForCategory(i) * branchTime;
-            					siteModel.getSubstitutionModel().getTransitionProbabilities(branchLength, probabilities);
-            						
-            				}
-              		}
-                    
-                    likelihoodCore.calculateLogLikelihoods(partials, probabilities, patternLogLikelihoods);
+                    cenancestorlikelihoodCore.calculateLogLikelihoods(partials, frequencies, patternLogLikelihoods);
                 }
 
                 update = true;
@@ -586,12 +696,39 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
 
             // moved this call to here, because non-integrating siteModels don't need to support it - AD
             double[] proportions = siteModel.getCategoryProportions();
-            likelihoodCore.integratePartials(nodeNum, proportions, rootPartials);
+            		cenancestorlikelihoodCore.integratePartials(nodeNum, proportions, rootPartials);
         } else {
-            likelihoodCore.getPartials(nodeNum, rootPartials);
+        			cenancestorlikelihoodCore.getPartials(nodeNum, rootPartials);
         }
 
         return rootPartials;
+    }
+    
+    public final double[] getCenancestorPartials() {
+        if (cenancestorPartials == null) {
+            cenancestorPartials = new double[patternCount * stateCount];
+        }
+
+        int nodeNum = getCenancestorIndex();
+        if (integrateAcrossCategories) {
+
+            // moved this call to here, because non-integrating siteModels don't need to support it - AD
+            double[] proportions = siteModel.getCategoryProportions();
+            		cenancestorlikelihoodCore.integratePartials(nodeNum, proportions, cenancestorPartials);
+        } else {
+        			cenancestorlikelihoodCore.getPartials(nodeNum, cenancestorPartials);
+        }
+
+        return cenancestorPartials;
+    }
+ 
+    
+    /**
+     * Return the index of the fake cenancestor node to modify its associated matrices and partials.
+     * @return Index of fake cenancestor node
+     */
+    public int getCenancestorIndex() {
+    		return nodeCount-1;
     }
 
     /**
@@ -600,6 +737,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
      * use getRootPartials() instead).
      */
     private double[] rootPartials = null;
+    private double[] cenancestorPartials = null;
 
     public class SiteLikelihoodsStatistic extends Statistic.Abstract {
 
@@ -632,7 +770,6 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                 return patternList.getPatternCount();
             }
         }
-
     }
 
     // **************************************************************
@@ -652,7 +789,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     /**
      * the branch rate model
      */
-    protected final BranchRateModel branchRateModel;
+    protected final CenancestorBranchRateModel branchRateModel;
 
     /**
      * the tip partials model
@@ -693,5 +830,5 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     /**
      * the LikelihoodCore
      */
-    protected LikelihoodCore likelihoodCore;
+    protected CenancestorLikelihoodCore cenancestorlikelihoodCore;
 }
