@@ -766,9 +766,9 @@ public class BeastMain {
             BeastMPI.Finalize();
         }
 
-        if (!window) {
-            System.exit(0);
-        }
+//        if (!window) {
+//            System.exit(0);
+//        }
     }
 }
 
