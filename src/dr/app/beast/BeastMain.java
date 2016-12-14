@@ -157,6 +157,11 @@ public class BeastMain {
                 MCMC[] chains = new MCMC[chainCount];
                 MCMCMCOptions options = new MCMCMCOptions(chainTemperatures, swapChainsEvery);
 
+                String overwrite_bkp = "false";
+                if (System.getProperty("log.allow.overwrite") != null){
+                		overwrite_bkp=System.getProperty("log.allow.overwrite");
+                }
+                
                 Logger.getLogger("dr.apps.beast").info("Starting cold chain plus hot chains with temperatures: ");
                 for (int i = 1; i < chainTemperatures.length; i++) {
                     Logger.getLogger("dr.apps.beast").info("Hot Chain " + i + ": " + chainTemperatures[i]);
@@ -180,6 +185,7 @@ public class BeastMain {
                     // turn off all messages for subsequent reads of the file (they will be the same as the
                     // first time).
                     messageHandler.setLevel(Level.OFF);
+                    System.setProperty("log.allow.overwrite", "true"); //turn off the overwrite protection since the same output will be checked by all hot chains 
                     parser = new BeastParser(new String[]{fileName}, additionalParsers, verbose, parserWarning, strictXML);
 
                     chains[i] = (MCMC) parser.parse(fileReader, MCMC.class);
@@ -191,7 +197,7 @@ public class BeastMain {
 
                 // restart messages
                 messageHandler.setLevel(Level.ALL);
-
+                System.setProperty("log.allow.overwrite", overwrite_bkp);
                 MCMCMC mc3 = new MCMCMC(chains, options);
                 Thread thread = new Thread(mc3);
                 thread.start();
