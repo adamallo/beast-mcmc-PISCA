@@ -85,7 +85,10 @@ public class CNVSubstitutionModel extends AbstractModel implements SubstitutionM
     private double maxConditionNumber = 10000;
     private int maxIterations = 1000;
     private boolean checkConditioning = true;
-    private boolean doNormalization = false; //Does not work in the current matrix implementation
+    private boolean doNormalization = false; //We do not normalize and make the rates relative to one of the rates.
+    //This means that the clock rate is given in gains per fragment per allele, and we can calculate loss and conversion from it.
+    //I think that normalizing will generate a big amount of error since the rates per site naturally accelerate along branches due to 
+    //the change in frequencies. There is NO equilibrium frequency here.
 	
 	private Variable<Double> gainParameter;
 	private Variable<Double> lossParameter;
@@ -307,8 +310,8 @@ public class CNVSubstitutionModel extends AbstractModel implements SubstitutionM
 //        normalization = subst;
 
             for (i = 0; i < stateCount; i++) {
-                Eval[i] /= subst;
-                EvalImag[i] /= subst;
+                Eval[i] /= subst/stateCount;//Unweighted mean
+                EvalImag[i] /= subst/stateCount;
             }
         }
     }
@@ -317,9 +320,19 @@ public class CNVSubstitutionModel extends AbstractModel implements SubstitutionM
     public void storeIntoAmat(){
     	
 
-        double g = gainParameter.getValue(0);
-        double d = lossParameter.getValue(0);
-        double c = conversionParameter.getValue(0);
+        double tg = gainParameter.getValue(0);
+        double td = lossParameter.getValue(0);
+        double tc = conversionParameter.getValue(0);
+        
+        //We cannot normalize the matrix using the flux of states, since we do not have an equilibrium or equilibrium frequencies.
+        //However, we can normalize the rates making them relative. This way we do have a general mutation rate per fragment per allele, composed by the three relative rates of gain, loss and conversion.
+        //This way we can still use clock models
+        
+        double totalRate=tg+td+tc;
+        double g = tg/totalRate;
+        	double d = td/totalRate;
+        	double c = tc/totalRate;
+        
         double [][] r = amat;
         int i, j = 0;
         
