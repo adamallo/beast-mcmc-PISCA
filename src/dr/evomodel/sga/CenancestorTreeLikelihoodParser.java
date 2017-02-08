@@ -49,7 +49,7 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
     public static final String FORCE_RESCALING = "forceRescaling";
     public static final String CENANCESTOR_HEIGHT = "cenancestorHeight";
     public static final String CENANCESTOR_BRANCH = "cenancestorBranch";
-    public static final String USE_AS_STATISTIC= "useAsStatistic";
+//    public static final String USE_AS_STATISTIC= "useAsStatistic";
     
     public String getParserName() {
         return TREE_LIKELIHOOD;
@@ -75,7 +75,7 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
         Parameter cenancestor = (Parameter) xo.getElementFirstChild(CENANCESTOR_HEIGHT);
         
         Parameter cenancestorBranch= (Parameter) xo.getElementFirstChild(CENANCESTOR_BRANCH);
-        
+
         //Parameter AsStatistic=(Parameter) xo.getChild(USE_AS_STATISTIC);
 
         TipStatesModel tipStatesModel = (TipStatesModel) xo.getChild(TipStatesModel.class);
@@ -132,7 +132,7 @@ public class CenancestorTreeLikelihoodParser extends AbstractXMLObjectParser {
                     new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
             new ElementRule(CENANCESTOR_BRANCH,
                     new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
-            new ElementRule(USE_AS_STATISTIC,
-                    new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
+            //new ElementRule(USE_AS_STATISTIC,
+                    //new XMLSyntaxRule[]{new ElementRule(Parameter.class)},true),
     };
 }

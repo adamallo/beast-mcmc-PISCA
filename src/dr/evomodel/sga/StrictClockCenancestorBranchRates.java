@@ -79,5 +79,10 @@ public class StrictClockCenancestorBranchRates extends AbstractCenancestorBranch
     public double getBranchRate(double mrca, double cen) {
         return rateParameter.getParameterValue(0);
     }
+    public void initCenancestor(Parameter cenancestorBranch) {
+    		//this.cenancestorBranch=cenancestorBranch;
+    }
+    
+    //private Parameter cenancestorBranch;
 
 }

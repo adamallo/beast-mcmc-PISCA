@@ -153,5 +153,11 @@ public class RateEpochCenancestorBranchRateModel extends AbstractCenancestorBran
     protected double normalizeRate(double rate) {
         return rate;
     }
+    
+    public void initCenancestor(Parameter cenancestorBranch) {
+		this.cenancestorBranch=cenancestorBranch;
+    }
+    
+    private Parameter cenancestorBranch;
 
 }

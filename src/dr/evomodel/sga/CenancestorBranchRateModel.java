@@ -29,6 +29,7 @@ package dr.evomodel.sga;
 
 import dr.evolution.tree.*;
 import dr.inference.model.Model;
+import dr.inference.model.Parameter;
 
 /**
  * Date: Dec 13, 2004
@@ -44,4 +45,7 @@ public interface CenancestorBranchRateModel extends Model, BranchRates, TreeTrai
     // This is inherited from BranchRates:
     //double getBranchRate(Tree tree, NodeRef node);
     double getBranchRate(double mrcaHeight, double cenHeight);
+    
+    //This connects the cenancestor parameter with BranchRateModels, since they cannot get it from the tree
+    void initCenancestor(Parameter cenancestorBranch);
 }

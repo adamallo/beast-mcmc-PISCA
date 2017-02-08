@@ -102,11 +102,12 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
             
             this.cenancestorHeight = cenancestorHeight;
             	addVariable(cenancestorHeight);
-            	cenancestorHeight.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1)); //TODO The lower bound should be the maximum leaf height
+            	cenancestorHeight.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0, 1)); 
             	
             	this.cenancestorBranch= cenancestorBranch;
-            	cenancestorBranch.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0,1)); //TODO The upper bound should be the maximum leaf height
+            	cenancestorBranch.addBounds(new Parameter.DefaultBounds(Double.POSITIVE_INFINITY, 0.0,1));
             	addVariable(cenancestorBranch);
+            	branchRateModel.initCenancestor(cenancestorBranch);
             	
             	//if (asStatistic == cenancestorHeight){
             	//	this.branchRules=true;
@@ -320,15 +321,15 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     {
     		if (variable==this.cenancestorHeight)
     		{
-    			updateNode(treeModel.getRoot());
     			updateCenancestorBranch();
-    			//updateAllNodes();
+    			updateNode(treeModel.getRoot());
+    			fireModelChanged();
     		}
     		else if (variable==this.cenancestorBranch)
     		{
-    			updateNode(treeModel.getRoot());
     			updateCenancestorHeight();
-    			//updateAllNodes();
+    			updateNode(treeModel.getRoot());
+    			fireModelChanged();
     		}
     }
     
@@ -353,17 +354,13 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                     // rate changes.
                     updateNodeAndChildren(((TreeModel.TreeChangedEvent) object).getNode());
                     if(((TreeModel.TreeChangedEvent) object).getNode()==treeModel.getRoot()); {
-                    		updateNode(treeModel.getRoot()); //If the root changes we need to update it, since we need to recalculate the cenancestor branch.
-                    		//if(branchRules){
-                    			updateCenancestorHeight(); //The root changes, and therefore the cenancestor height must be recalculated (acts as statistic), since the cenancestor branch rules (acts as a parameter, changed only by operators)
-                    		//} else {
-                    		//	updateCenancestorBranch(); //The root changes, and therefore the cenancestor branch must be recalculated (acts as statistic) , since the cenancestor height rules (acts as a parameter, changed only by operators)
-                    		//}
+                    		updateCenancestorHeight(); //The root changes, and therefore the cenancestor height must be recalculated (acts as statistic), since the cenancestor branch rules (acts as a parameter, changed only by operators)
                     }
 
                 } else if (((TreeModel.TreeChangedEvent) object).isTreeChanged()) {
                     // Full tree events result in a complete updating of the tree likelihood
                     updateAllNodes();
+                    updateCenancestorHeight();
                 } else {
                     // Other event types are ignored (probably trait changes).
                     //System.err.println("Another tree event has occured (possibly a trait change).");
@@ -606,7 +603,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     			rootUpdated=true;
     			// Get the operational time of the fake branch from the root to the cenancestor 
     			double rootHeight = treeModel.getNodeHeight(treeModel.getRoot());
-    			double branchRate = branchRateModel.getBranchRate(rootHeight, getCenancestorHeight()); //TODO: Could this be easily improved? I would do to adapt the tree structure and abstact tree likelihood
+    			double branchRate = branchRateModel.getBranchRate(rootHeight, getCenancestorHeight()); //TODO: Could this be easily improved? I would have to adapt the tree structure and abstact tree likelihood
     			double branchTime = branchRate * getCenancestorBranch() ; //TODO: Could this be easily improved? The same as before
 
     		

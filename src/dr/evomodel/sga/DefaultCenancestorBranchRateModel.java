@@ -30,6 +30,7 @@ package dr.evomodel.sga;
 import dr.evolution.tree.*;
 import dr.inference.model.Model;
 import dr.inference.model.ModelListener;
+import dr.inference.model.Parameter;
 import dr.inference.model.Variable;
 
 /**
@@ -136,4 +137,8 @@ public final class DefaultCenancestorBranchRateModel implements CenancestorBranc
     public String getTraitString(final Tree tree, final NodeRef node) {
         return Double.toString(getBranchRate(tree, node));
     }
+    
+    public void initCenancestor(Parameter cenancestorBranch) {
+	}
+    
 }
