@@ -139,6 +139,12 @@ public final class DefaultCenancestorBranchRateModel implements CenancestorBranc
     }
     
     public void initCenancestor(Parameter cenancestorBranch) {
+    		this.cenancestorBranch=cenancestorBranch;
 	}
     
+    public Parameter getCenancestor() {
+    		return this.cenancestorBranch;
+    }
+    
+    private Parameter cenancestorBranch;
 }

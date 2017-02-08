@@ -156,8 +156,13 @@ public class RateEpochCenancestorBranchRateModel extends AbstractCenancestorBran
     
     public void initCenancestor(Parameter cenancestorBranch) {
 		this.cenancestorBranch=cenancestorBranch;
+		//if this were used we should add the variable addVariable(cenancestorBranch)
     }
-    
+
+    public Parameter getCenancestor() {
+		return this.cenancestorBranch;
+    }
+
     private Parameter cenancestorBranch;
 
 }

@@ -251,9 +251,12 @@ public class RandomLocalClockModelCenancestor extends AbstractCenancestorBranchR
     		addVariable(cenancestorBranch); //This would actually be part of the tree model. If it changes, we need to recalculate the rates, and then the likelihood.
     }
 
+    public Parameter getCenancestor() {
+		return this.cenancestorBranch;
+    }
 
     //Cenancestor-related variables
-    private Statistic cenancestorBranch;
+    private Parameter cenancestorBranch = null;
     
     // the scale factor necessary to maintain the mean rate
     private double scaleFactor;

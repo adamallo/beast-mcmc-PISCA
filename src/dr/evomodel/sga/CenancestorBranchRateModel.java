@@ -27,8 +27,7 @@
 
 package dr.evomodel.sga;
 
-import dr.evolution.tree.*;
-import dr.inference.model.Model;
+import dr.evomodel.branchratemodel.BranchRateModel;
 import dr.inference.model.Parameter;
 
 /**
@@ -38,7 +37,7 @@ import dr.inference.model.Parameter;
  * @author Alexei Drummond
  * @version $Id: BranchRateModel.java,v 1.4 2005/05/24 20:25:57 rambaut Exp $
  */
-public interface CenancestorBranchRateModel extends Model, BranchRates, TreeTraitProvider, TreeTrait<Double> {
+public interface CenancestorBranchRateModel extends BranchRateModel {
     public static final String BRANCH_RATES = "branchRates";
     public static final String RATE = "rate";
 
@@ -48,4 +47,8 @@ public interface CenancestorBranchRateModel extends Model, BranchRates, TreeTrai
     
     //This connects the cenancestor parameter with BranchRateModels, since they cannot get it from the tree
     void initCenancestor(Parameter cenancestorBranch);
+    
+    //To spread the cenancestor to other classes using CenancestorBranchRateModel: Important, before all models are conected to the likelihood model
+    //this my return null. All objects calling this should have a flag and keep trying to get the cenancestor until it is not null.
+    Parameter getCenancestor();
 }

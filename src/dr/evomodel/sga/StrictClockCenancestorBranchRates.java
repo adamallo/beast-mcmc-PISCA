@@ -80,9 +80,14 @@ public class StrictClockCenancestorBranchRates extends AbstractCenancestorBranch
         return rateParameter.getParameterValue(0);
     }
     public void initCenancestor(Parameter cenancestorBranch) {
-    		//this.cenancestorBranch=cenancestorBranch;
+		this.cenancestorBranch=cenancestorBranch;
+		//if this were used we should add the variable addVariable(cenancestorBranch)
     }
-    
-    //private Parameter cenancestorBranch;
+
+    public Parameter getCenancestor() {
+		return this.cenancestorBranch;
+    }
+
+    private Parameter cenancestorBranch;
 
 }
