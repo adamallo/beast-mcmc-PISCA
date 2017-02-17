@@ -318,16 +318,18 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
      */
     protected void handleVariableChangedEvent(Variable variable, int index, Parameter.ChangeType type)
     {
-    		if (variable==this.cenancestorHeight)
+    		if (variable==this.cenancestorHeight) //This should never happen
     		{
-    			updateNode(treeModel.getRoot());
     			updateCenancestorBranch();
+    			updateNode(treeModel.getRoot());
+    			fireModelChanged();
     			//updateAllNodes();
     		}
     		else if (variable==this.cenancestorBranch)
     		{
-    			updateNode(treeModel.getRoot());
     			updateCenancestorHeight();
+    			updateNode(treeModel.getRoot());
+    			fireModelChanged(); //Fire model change for submodels, for example branch rates
     			//updateAllNodes();
     		}
     }
@@ -345,25 +347,24 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
         if (model == treeModel) {
             if (object instanceof TreeModel.TreeChangedEvent) {
 
-                if (((TreeModel.TreeChangedEvent) object).isNodeChanged()) {
+            		if (((TreeModel.TreeChangedEvent) object).areAllInternalHeightsChanged()) {
+                    updateAllNodes();
+                    updateCenancestorHeight();
+            		} else if (((TreeModel.TreeChangedEvent) object).isNodeChanged()) {
                     // If a node event occurs the node and its two child nodes
                     // are flagged for updating (this will result in everything
                     // above being updated as well. Node events occur when a node
                     // is added to a branch, removed from a branch or its height or
                     // rate changes.
                     updateNodeAndChildren(((TreeModel.TreeChangedEvent) object).getNode());
-                    if(((TreeModel.TreeChangedEvent) object).getNode()==treeModel.getRoot()); {
-                    		updateNode(treeModel.getRoot()); //If the root changes we need to update it, since we need to recalculate the cenancestor branch.
-                    		//if(branchRules){
-                    			updateCenancestorHeight(); //The root changes, and therefore the cenancestor height must be recalculated (acts as statistic), since the cenancestor branch rules (acts as a parameter, changed only by operators)
-                    		//} else {
-                    		//	updateCenancestorBranch(); //The root changes, and therefore the cenancestor branch must be recalculated (acts as statistic) , since the cenancestor height rules (acts as a parameter, changed only by operators)
-                    		//}
+                    if(((TreeModel.TreeChangedEvent) object).getNode()==treeModel.getRoot()) {
+                   		updateCenancestorHeight();
                     }
 
                 } else if (((TreeModel.TreeChangedEvent) object).isTreeChanged()) {
                     // Full tree events result in a complete updating of the tree likelihood
                     updateAllNodes();
+                    updateCenancestorHeight();
                 } else {
                     // Other event types are ignored (probably trait changes).
                     //System.err.println("Another tree event has occured (possibly a trait change).");
@@ -656,7 +657,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
                     int nodeNumCenan = getCenancestorIndex();
                     
                     if(cenancestorHeight != null) {
-                    		if (rootUpdated) {
+                    		if (update1 || update2 || rootUpdated) {
                         		// Calculate the partials at the cenancestor. The transition matrix of the root was calculated before.
                         		cenancestorlikelihoodCore.setNodePartialsForUpdate(nodeNumCenan);
 
@@ -775,7 +776,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
     // **************************************************************
     // INSTANCE VARIABLES
     // **************************************************************
-
+    
     /**
      * the frequency model for these sites
      */
