@@ -28,7 +28,6 @@
 package dr.evomodel.sga;
 
 import dr.evolution.datatype.DataType;
-import dr.evolution.datatype.GeneralDataType;
 import dr.evomodel.sga.CNVSubstitutionModel;
 import dr.evomodel.substmodel.FrequencyModel;
 import dr.inference.model.Variable;
