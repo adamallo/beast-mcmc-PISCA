@@ -61,8 +61,8 @@ public class RandomLocalClockModelCenancestor extends AbstractCenancestorBranchR
 
         this.ratesAreMultipliers = ratesAreMultipliers;
 
-        indicators = new TreeParameterModel(treeModel, rateIndicatorParameter, false,Intent.BRANCH);
-        rates = new TreeParameterModel(treeModel, ratesParameter, false,Intent.BRANCH);
+        indicators = new TreeParameterModel(treeModel, rateIndicatorParameter, false, Intent.BRANCH);
+        rates = new TreeParameterModel(treeModel, ratesParameter, false, Intent.BRANCH);
         
         rateIndicatorParameter.addBounds(new Parameter.DefaultBounds(1, 0, rateIndicatorParameter.getDimension()));
         ratesParameter.addBounds(new Parameter.DefaultBounds(Double.MAX_VALUE, 0, ratesParameter.getDimension()));
@@ -257,12 +257,13 @@ public class RandomLocalClockModelCenancestor extends AbstractCenancestorBranchR
     
     //Re-implementation of TreeTraitProvider
     public TreeTrait getTreeTrait(final String key) {
-    		switch(key) {
-    		case RandomLocalClockModelParser.RATES: return this.rates;
-    		case RandomLocalClockModelParser.RATE_INDICATORS: return this.indicators;
-    		default:
-    			return this;
-    		}
+    	if (key.equals(RandomLocalClockModelParser.RATES)) {
+        	return this.rates;
+        } else if (key.equals(RandomLocalClockModelParser.RATE_INDICATORS)) {
+        	return this.indicators;
+        } else {
+            return this;
+        }
     }
  
     public TreeTrait[] getTreeTraits() {
