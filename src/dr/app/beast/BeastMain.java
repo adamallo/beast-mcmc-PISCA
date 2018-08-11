@@ -188,6 +188,17 @@ public class BeastMain {
                     System.setProperty("log.allow.overwrite", "true"); //turn off the overwrite protection since the same output will be checked by all hot chains 
                     parser = new BeastParser(new String[]{fileName}, additionalParsers, verbose, parserWarning, strictXML);
 
+					// DM: Hot chains also need to load the parser included in the plugin!. This is needed in the patch to use PISCA with v1.8.4 MC3
+					for (String pluginName : PluginLoader.getAvailablePlugins()) {
+		                Plugin plugin = PluginLoader.loadPlugin(pluginName);
+		                if (plugin != null) {
+		                    Set<XMLObjectParser> parserSet = plugin.getParsers();
+		                    for (XMLObjectParser pluginParser : parserSet) {
+		                        parser.addXMLObjectParser(pluginParser);
+		                    }
+		                }
+		            }
+
                     chains[i] = (MCMC) parser.parse(fileReader, MCMC.class);
                     if (chains[i] == null) {
                         throw new dr.xml.XMLParseException("BEAST XML file is missing an MCMC element");
@@ -771,7 +782,7 @@ public class BeastMain {
         if (useMPI) {
             BeastMPI.Finalize();
         }
-
+// DM: Fix for MCMCMC to work properly from command-line. Otherwise, when the main thread gets here the program is killed, without letting the MCMCMC threads work. Included in the patch to use v1.8.4 with PISCA MC3
 //        if (!window) {
 //            System.exit(0);
 //        }
