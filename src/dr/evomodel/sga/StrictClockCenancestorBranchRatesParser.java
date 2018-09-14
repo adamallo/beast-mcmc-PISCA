@@ -28,6 +28,7 @@
 package dr.evomodel.sga;
 
 
+import dr.inference.model.Bounds;
 import dr.inference.model.Parameter;
 import dr.xml.*;
 
@@ -47,6 +48,11 @@ public class StrictClockCenancestorBranchRatesParser extends AbstractXMLObjectPa
     public Object parseXMLObject(XMLObject xo) throws XMLParseException {
 
         Parameter rateParameter = (Parameter) xo.getElementFirstChild(RATE);
+        Bounds<Double> rateBounds=rateParameter.getBounds();
+        
+        if (rateBounds==null|| rateBounds!=null && rateBounds.getLowerLimit(0)<0.00000001){
+            Logger.getLogger("dr.evomodel").warning("WARNING:\nIf used with ascertainment bias correction, a lower-unbounded clockrate may generate numerical instability resulting in positive data likelihoods and impeding proper mixing.");
+        }
 
         Logger.getLogger("dr.evomodel").info("Using strict molecular clock model.");
 
