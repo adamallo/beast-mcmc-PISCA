@@ -144,7 +144,7 @@ public class CenancestorTreeLikelihood extends AbstractTreeLikelihood {
             String coreName = "Java general";
             
             /**
-             * TODO: Check if is worthy to implement other datatypes.
+             * TODO: Check if is worth implementing other datatypes.
              */
             
             final DataType dataType = patternList.getDataType();
