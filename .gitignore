@@ -1,12 +1,41 @@
+# Apple
+#######
+.DS_Store
+
+# Temporary backups
+###################
+*_bkp
+
+# Inputs
+########
 *.xml
 *.iml
 *.ipr
 *.iws
+
+# Other exclusions
+##################
+*.txt
+*.tar.gz
+
+# Directories without sources
+#############################
 bin/
 build/
 dist/
 out/
 doc/
+release/
+release*/
+lib/
+packaging_tools/
+native/
+
+# Outputs
+#########
 *.log
 *.trees
 *.ops
+*.log*
+*.tree*
+*.ops*

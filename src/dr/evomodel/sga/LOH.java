@@ -66,7 +66,6 @@ public class LOH extends AbstractModel implements SubstitutionModel, dr.util.XHT
 	     */
 	    public LOH(Variable alphaParameter, Variable betaParameter,FrequencyModel freqModel) {
 	
-	        //super(LOHParser.LOH_MODEL,TwoStates.INSTANCE,freqModel);
 	    	super(LOHParser.LOH_MODEL);
 	    	
 	    	this.dataType = TwoStates.INSTANCE;
